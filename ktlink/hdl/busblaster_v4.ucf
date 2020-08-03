@@ -16,7 +16,7 @@ net "rtck_p" loc="P81";
 net "tdo_p" loc="P79";
 net "srst_np" loc="P78";
 net "dbgrq_p" loc="P77";
-net "dbgack_p" loc="P76";
+net "dbgack_p" loc="P76" | pullup;
 
 # FT2232H connection
 net "ft_tck_p" loc="P60";		# ADBUS0
@@ -37,7 +37,7 @@ net "ft_tdi_oe_np" loc="P27" | pullup;		# GCK2
 net "ft_tck_oe_np" loc="P37" | pullup;
 net "ft_led_np" loc="P36";
 
-net "bdbus0_p" loc="P17";		# BDBUS0
+net "ft_tx_p" loc="P17";		# BDBUS0
 net "ft_rx_p" loc="P16";
 net "bdbus2_p" loc="P15";
 net "bdbus3_p" loc="P14";

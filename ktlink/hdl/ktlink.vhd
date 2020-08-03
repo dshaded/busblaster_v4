@@ -20,10 +20,10 @@ entity toplevel is
       tms_p    : inout std_logic;       -- SWDIO
       tck_p    : inout std_logic;       -- SWCLK
       rtck_p   : in    std_logic;
-      tdo_p    : in    std_logic;       -- SWO
+      tdo_p    : in    std_logic;       -- SWO (FT_RX untill dbgback_p goes low)
       srst_np  : inout std_logic;
-      dbgrq_p  : in    std_logic;
-      dbgack_p : in    std_logic;
+      dbgrq_p  : out   std_logic;       -- FT_TX
+      dbgack_p : in    std_logic;       -- FT_RX
 
       -- FT2232 connections
       ft_tck_p     : in  std_logic;     -- TCK
@@ -44,7 +44,7 @@ entity toplevel is
       ft_tck_oe_np  : in std_logic;     -- TCK OE
       ft_led_np     : in std_logic;     -- LED
 
-      bdbus0_p : in  std_logic;
+      ft_tx_p  : in  std_logic;         -- TX
       ft_rx_p  : out std_logic;         -- RX
       bdbus2_p : in  std_logic;
       bdbus3_p : in  std_logic;
@@ -63,8 +63,9 @@ entity toplevel is
       bcbus7_p : in std_logic;
 
       -- other
-      led_p     : out std_logic;
-      button_np : in  std_logic
+      led_p        : out   std_logic;
+      button_np    : in    std_logic;
+		swo_disabled : inout std_logic
       );
 end toplevel;
 
@@ -73,7 +74,7 @@ begin
    tck_p <= ft_tck_p when ft_tck_oe_np = '0' else 'Z';
    tdi_p <= ft_tdi_p when ft_tdi_oe_np = '0' else 'Z';
 
-   process (ft_tms_oe_np, ft_tdi_p, ft_tms_p, ft_swd_en_np, tdo_p, tms_p)
+   process (ft_tms_oe_np, ft_tdi_p, ft_tms_p, ft_swd_en_np, tdo_p, tms_p, dbgack_p)
    begin
       if ft_swd_en_np = '0' then
          -- use SWD
@@ -82,8 +83,10 @@ begin
          else
             tms_p <= 'Z';
          end if;
+			if dbgack_p = '0' then
+				swo_disabled <= '1';
+			end if;
          ft_tdo_p <= tms_p;
-         ft_rx_p  <= tdo_p;
       else
          -- use JTAG
          if ft_tms_oe_np = '0' then
@@ -92,15 +95,17 @@ begin
             tms_p <= 'Z';
          end if;
          ft_tdo_p <= tdo_p;
-         ft_rx_p  <= '1';
+			swo_disabled <= '0';
       end if;
    end process;
 
    trst_np      <= ft_trst_p     when ft_trst_oe_np = '0' else 'Z';
    srst_np      <= ft_srst_out_p when ft_srst_oe_np = '0' else 'Z';
    ft_srst_in_p <= srst_np;
+   ft_rtck_p    <= rtck_p;
 
-   ft_rtck_p <= rtck_p;
+   ft_rx_p      <= tdo_p when swo_disabled = '0' and ft_swd_en_np = '0' else dbgack_p;
+	dbgrq_p      <= ft_tx_p;
 
    led_p <= not ft_led_np;
 end behavioral;

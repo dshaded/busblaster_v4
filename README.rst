@@ -1,4 +1,19 @@
-BusBlaster v4
+Building/Flashing notes:
+=============
+Build svf: run iMPACT from ISE processes, double-click Boundary Scan in the iMPACT Flows panel, add the device from ISE ".jed" file, run "one step svf".
+
+Flash "defaul.svf" with urJTAG: run jtag, execute:
+
+bsdl path ./ktlink
+
+cable FT2232 vid=0x0403 pid=0x6010 interface=1
+
+svf ./ktlink/ise/default.svf progress stop
+
+
+
+
+Origina Readme:
 =============
 
 CPLD designs for the `BusBlaster v4`_ from Dangerous Prototypes.
